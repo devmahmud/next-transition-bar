@@ -1,0 +1,20 @@
+{
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"],
+    "eol-last": ["error", "always"],
+    "arrow-parens": ["error", "always"],
+    "prefer-const": "warn",
+    "accessor-pairs": "off",
+    "no-async-promise-executor": "off",
+    "no-unused-vars": "off",
+    "node/no-missing-require": "off",
+    "no-console": "warn"
+  }
+}
