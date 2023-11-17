@@ -1,5 +1,5 @@
 {
-  "name": "next-progress-bar",
+  "name": "next-transition-bar",
   "version": "1.0.0",
   "description": "Progress-bar component for Next.js app.",
   "main": "dist/index.js",

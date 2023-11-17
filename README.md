@@ -1,19 +1,19 @@
-# Next Progress Bar
+# Next Transition Bar
 
-Elevate the user experience in your Next.js applications effortlessly with **next-progress-bar** – a versatile npm package designed to seamlessly enhance page transition progress. This lightweight and customizable solution adds a top loader and progress bar, delivering both visual appeal and a smooth transition experience.
+Elevate the user experience in your Next.js applications effortlessly with **next-transition-bar** – a versatile npm package designed to seamlessly enhance page transition progress. This lightweight and customizable solution adds a top loader and progress bar, delivering both visual appeal and a smooth transition experience.
 
 ## Installation
 
 You can install the package using npm:
 
 ```bash
-npm install next-progress-bar
+npm install next-transition-bar
 ```
 
 Or if you prefer using yarn:
 
 ```bash
-yarn add next-progress-bar
+yarn add next-transition-bar
 ```
 
 ## Usage
@@ -21,21 +21,21 @@ yarn add next-progress-bar
 Start by importing the package:
 
 ```js
-import NextProgressBar from 'next-progress-bar';
+import NextTransitionBar from 'next-transition-bar';
 ```
 
 ### Integration with `app/layout.js` (for `app` folder structure)
 
-Include `<NextProgressBar />` within the `return()` statement inside the `<body></body>` of your `RootLayout()`:
+Include `<NextTransitionBar />` within the `return()` statement inside the `<body></body>` of your `RootLayout()`:
 
 ```js
-import NextProgressBar from 'next-progress-bar';
+import NextTransitionBar from 'next-transition-bar';
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <NextProgressBar />
+        <NextTransitionBar />
         {children}
       </body>
     </html>
@@ -45,15 +45,15 @@ export default function RootLayout({ children }) {
 
 ### Integration with `pages/_app.js` (for `pages` folder structure)
 
-To render, add `<NextProgressBar />` within the `return()` statement in `MyApp()`:
+To render, add `<NextTransitionBar />` within the `return()` statement in `MyApp()`:
 
 ```js
-import NextProgressBar from 'next-progress-bar';
+import NextTransitionBar from 'next-transition-bar';
 
 export default function MyApp({ Component, pageProps }) {
   return (
     <>
-      <NextProgressBar />
+      <NextTransitionBar />
       <Component {...pageProps} />;
     </>
   );
@@ -62,24 +62,24 @@ export default function MyApp({ Component, pageProps }) {
 
 ### Importing nprogress instance
 
-To import `nprogress` from 'next-progress-bar':
+To import `nprogress` from 'next-transition-bar':
 
 ```js
-import { nprogress } from 'next-progress-bar';
+import { nprogress } from 'next-transition-bar';
 ```
 
 or both
 
 ```js
-import NextProgressbar, { nprogress } from 'next-progress-bar';
+import NextTransitionBar, { nprogress } from 'next-transition-bar';
 ```
 
 ### Default Configuration
 
-If no props are passed to `<NextProgressBar />`, the package applies the following default configuration:
+If no props are passed to `<NextTransitionBar />`, the package applies the following default configuration:
 
 ```jsx
-<NextProgressBar
+<NextTransitionBar
   color="#29d"
   initialPosition={0.08}
   trickleSpeed={200}
@@ -115,4 +115,4 @@ If no props are passed to `<NextProgressBar />`, the package applies the followi
 - `nonce`: The nonce attribute to use for the `style` tag.
 - `transformCSS`: This is useful if you want to use a different style or minify the CSS.
 
-Experience a sleek and visually appealing progress bar with **next-progress-bar**. Customize it to suit your application's unique style and provide users with a delightful journey through your Next.js app.
+Experience a sleek and visually appealing progress bar with **next-transition-bar**. Customize it to suit your application's unique style and provide users with a delightful journey through your Next.js app.
