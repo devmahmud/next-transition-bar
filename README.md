@@ -68,6 +68,12 @@ To import `nprogress` from 'next-progress-bar':
 import { nprogress } from 'next-progress-bar';
 ```
 
+or both
+
+```js
+import NextProgressbar, { nprogress } from 'next-progress-bar';
+```
+
 ### Default Configuration
 
 If no props are passed to `<NextProgressBar />`, the package applies the following default configuration:
