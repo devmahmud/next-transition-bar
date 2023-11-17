@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/devmahmud/next-progress-bar.git"
+    "url": "git+https://github.com/devmahmud/next-transition-bar.git"
   },
   "keywords": [
     "Nprogress",
@@ -26,14 +26,15 @@
     "Next topbar progress",
     "Nprogress",
     "React nprogress",
-    "top loading indicator"
+    "top loading indicator",
+    "Transition bar"
   ],
   "author": "Mahmudul Alam <expelmahmud@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/devmahmud/next-progress-bar/issues"
+    "url": "https://github.com/devmahmud/next-transition-bar/issues"
   },
-  "homepage": "https://github.com/devmahmud/next-progress-bar#readme",
+  "homepage": "https://github.com/devmahmud/next-transition-bar#readme",
   "files": [
     "dist/**/*.js*",
     "dist/**/*.mjs*",

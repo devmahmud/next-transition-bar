@@ -107,7 +107,7 @@ const NextProgressbar = ({
   isRTL,
   nonce,
   transformCSS = (css) => (
-    <style nonce={nonce} jsx="true" global="true" precedence="default" href="next-progress-bar">
+    <style nonce={nonce} jsx="true" global="true" precedence="default" href="next-transition-bar">
       {css}
     </style>
   ),
