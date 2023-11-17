@@ -23,5 +23,5 @@
       }
     ]
   },
-  "files": ["src/index.tsx", "src/nprogress.ts", "./styleTypes.d.ts"]
+  "files": ["./src/index.tsx", "./src/nprogress.ts", "./styleTypes.d.ts"]
 }
