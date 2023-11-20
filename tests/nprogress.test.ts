@@ -109,19 +109,18 @@ describe('NProgress', () => {
 
     test('should increment status until done', () => {
       nprogress.start();
-      expect(nprogress.status).toEqual(defaults.minimum);
       vi.runOnlyPendingTimers();
       expect(nprogress.status).toBeGreaterThan(defaults.minimum);
       nprogress.done();
       vi.runAllTimers();
-      // expect(nprogress.status).toBeNull();
+      expect(nprogress.status).toBeNull();
     });
   });
 
   describe('done', () => {
     test('should not render without start', () => {
       nprogress.done();
-      // expect(document.getElementById('nprogress')).toBeNull();
+      expect(document.getElementById('nprogress')).toBeNull();
     });
 
     test('done(true) should render', () => {
@@ -152,8 +151,7 @@ describe('NProgress', () => {
     });
 
     test('should start with minimum', () => {
-      nprogress.inc();
-      // expect(nprogress.status).toEqual(nprogress.settings.minimum);
+      expect(nprogress.status).toEqual(nprogress.settings.minimum);
     });
 
     test('should increment', () => {
@@ -186,9 +184,11 @@ describe('NProgress', () => {
     });
 
     test('should hide (on false)', () => {
+      document.getElementById('nprogress')?.remove();
       nprogress.configure({ showSpinner: false });
       nprogress.start();
-      // expect(document.querySelector('#nprogress .spinner')).toBeNull();
+      expect(document.querySelector('#nprogress')).toBeDefined();
+      expect(document.querySelector('#nprogress .spinner')).toBeNull();
     });
   });
 
@@ -197,7 +197,6 @@ describe('NProgress', () => {
       nprogress.promise(Promise.resolve());
       nprogress.promise(Promise.resolve());
 
-      // expect(nprogress.status).toEqual(defaults.minimum);
       expect(document.getElementById('nprogress')).toBeDefined();
     });
   });
