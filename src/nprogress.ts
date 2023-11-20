@@ -51,7 +51,7 @@ const DEFAULTS: NProgressSettings = {
 
 const NProgress = (): NProgressInstance => {
   const localSettings: NProgressSettings = DEFAULTS;
-  let localStatus = 0;
+  let localStatus: number | null = null;
   let initialPromises = 0;
   let currentPromises = 0;
 
@@ -110,7 +110,10 @@ const NProgress = (): NProgressInstance => {
     return localSettings.isRTL ? 100 - value * 100 : (-1 + value) * 100;
   }
 
-  function randomInc(status: number): number {
+  function randomInc(status: number | null): number {
+    if (typeof status !== 'number') {
+      return 0;
+    }
     if (status >= 0 && status < 0.2) {
       return 0.1;
     }
@@ -169,7 +172,7 @@ const NProgress = (): NProgressInstance => {
 
     set(value: number): NProgressInstance {
       const clamppedValue = clamp(value, localSettings.minimum, 1);
-      localStatus = clamppedValue === 1 ? 0 : clamppedValue;
+      localStatus = clamppedValue === 1 ? null : clamppedValue;
 
       const progress = render();
 
