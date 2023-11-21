@@ -2,6 +2,8 @@
 
 Elevate the user experience in your Next.js applications effortlessly with **next-transition-bar** – a versatile npm package designed to seamlessly enhance page transition progress. This lightweight and customizable solution adds a top loader and progress bar, delivering both visual appeal and a smooth transition experience.
 
+[Live Demo](https://next-transition-bar.vercel.app)
+
 ## Installation
 
 You can install the package using npm:
