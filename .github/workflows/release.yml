@@ -28,4 +28,4 @@ jobs:
       - name: Run Semantic Release
         run: npx semantic-release
         env:
-          GH_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
