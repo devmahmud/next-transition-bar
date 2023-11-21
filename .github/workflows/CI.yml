@@ -52,5 +52,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Install Dependencies
         run: yarn --frozen-lockfile
+      - name: Run tests
+        run: yarn test
       - name: Typecheck And Build Code
         run: yarn typecheck && yarn build

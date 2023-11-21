@@ -9,7 +9,10 @@
     "prepack": "npm run build",
     "lint": "eslint --fix --cache src/",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "release": "semantic-release",
+    "release-test": "semantic-release --dry-run",
+    "test": "vitest run"
   },
   "repository": {
     "type": "git",
@@ -45,14 +48,23 @@
     "react-dom": ">= 16.0.1"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/github": "^9.2.3",
+    "@semantic-release/npm": "^11.0.1",
+    "@semantic-release/release-notes-generator": "^12.1.0",
     "@types/node": "^20.9.1",
     "@types/react": "^18.2.37",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
+    "@vitejs/plugin-react": "^4.2.0",
     "eslint": "^8.53.0",
+    "jsdom": "^22.1.0",
     "prettier": "^3.1.0",
     "react": "^18.2.0",
+    "semantic-release": "^22.0.8",
     "tsup": "^7.3.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "vitest": "^0.34.6"
   }
 }

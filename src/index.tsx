@@ -3,7 +3,7 @@
 import * as React from 'react';
 import nprogress from './nprogress';
 
-export type NextProgressBarProps = {
+export type NextTransitionBarProps = {
   /**
    * Color for the progressbar.
    * @default "#29d"
@@ -91,7 +91,7 @@ export type NextProgressBarProps = {
 
 type PushStateInput = [data: unknown, unused: string, url?: string | URL | null | undefined];
 
-const NextProgressbar = ({
+const NextTransitionBar = ({
   color: propColor,
   height: propHeight,
   showSpinner,
@@ -111,7 +111,7 @@ const NextProgressbar = ({
       {css}
     </style>
   ),
-}: NextProgressBarProps) => {
+}: NextTransitionBarProps) => {
   const defaultColor = '#29d';
   const defaultHeight = 3;
 
@@ -274,4 +274,4 @@ const NextProgressbar = ({
   `);
 };
 
-export { NextProgressbar as default, nprogress };
+export { NextTransitionBar as default, nprogress };
