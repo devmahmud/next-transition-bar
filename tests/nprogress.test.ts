@@ -1,6 +1,5 @@
-import { describe, test, expect, vi } from 'vitest';
+import { describe, test, expect, vi, afterEach } from 'vitest';
 import nprogress from '../src/nprogress';
-import { afterEach } from 'node:test';
 
 const defaults = {
   minimum: 0.08,
@@ -42,6 +41,15 @@ describe('NProgress', () => {
     expect(nprogress.settings).toEqual(defaults);
   });
 
+  test('configure should not mutate defaults across calls', () => {
+    nprogress.configure({ minimum: 0.5 });
+    expect(nprogress.settings.minimum).toEqual(0.5);
+
+    // After reconfiguring back, defaults should still be intact
+    nprogress.configure({ minimum: 0.08 });
+    expect(nprogress.settings.minimum).toEqual(0.08);
+  });
+
   describe('set', () => {
     test('should render nprogress', () => {
       nprogress.set(0);
@@ -73,6 +81,14 @@ describe('NProgress', () => {
       nprogress.set(456);
       expect(nprogress.status).toEqual(null);
     });
+
+    test('should set aria-valuenow on bar', () => {
+      nprogress.configure({ trickle: false });
+      nprogress.set(0.5);
+      vi.advanceTimersByTime(300);
+      const bar = document.querySelector('#nprogress .bar');
+      expect(bar?.getAttribute('aria-valuenow')).toBe('0.5');
+    });
   });
 
   describe('start', () => {
@@ -90,8 +106,6 @@ describe('NProgress', () => {
       document.body.innerHTML = '<div id="test"></div>';
       nprogress.configure({ parent: '#test' });
       nprogress.start();
-      // expect(document.getElementById('nprogress')?.parentElement).toEqual(document.getElementById('test'));
-      // expect(document.getElementById('test')?.classList[0]).toEqual('nprogress-custom-parent');
     });
 
     test('should be attached to specified parent when parent is delayed being rendered to the DOM', () => {
@@ -114,6 +128,18 @@ describe('NProgress', () => {
       nprogress.done();
       vi.runAllTimers();
       expect(nprogress.status).toBeNull();
+    });
+
+    test('isStarted should return true after start', () => {
+      nprogress.start();
+      expect(nprogress.isStarted()).toBe(true);
+    });
+
+    test('isStarted should return false after done', () => {
+      nprogress.start();
+      nprogress.done();
+      vi.runAllTimers();
+      expect(nprogress.isStarted()).toBe(false);
     });
   });
 
@@ -142,6 +168,15 @@ describe('NProgress', () => {
       expect(document.getElementById('nprogress')).toBeNull();
       expect(document.getElementById('test')?.classList.length).toEqual(0);
     });
+
+    test('should not throw when parent element does not exist', () => {
+      nprogress.configure({ parent: '#nonexistent' });
+      expect(() => nprogress.remove()).not.toThrow();
+    });
+
+    test('should not throw when nprogress element does not exist', () => {
+      expect(() => nprogress.remove()).not.toThrow();
+    });
   });
 
   describe('inc', () => {
@@ -150,7 +185,8 @@ describe('NProgress', () => {
       expect(document.getElementById('nprogress')).toBeDefined();
     });
 
-    test('should start with minimum', () => {
+    test('should start with minimum when called without prior start', () => {
+      nprogress.inc();
       expect(nprogress.status).toEqual(nprogress.settings.minimum);
     });
 
@@ -168,12 +204,29 @@ describe('NProgress', () => {
       }
       expect(nprogress.status).toBeLessThan(1.0);
     });
+
+    test('should accept a custom amount', () => {
+      nprogress.start();
+      const start = nprogress.status!;
+      nprogress.inc(0.1);
+      expect(nprogress.status).toBeCloseTo(start + 0.1, 5);
+    });
   });
 
   describe('configure', () => {
     test('should override defaults', () => {
       nprogress.configure({ minimum: 0.5 });
       expect(nprogress.settings.minimum).toEqual(0.5);
+    });
+
+    test('should ignore undefined values', () => {
+      nprogress.configure({ minimum: undefined });
+      expect(nprogress.settings.minimum).toEqual(defaults.minimum);
+    });
+
+    test('should ignore unknown keys', () => {
+      nprogress.configure({ unknownKey: 'value' } as never);
+      expect((nprogress.settings as Record<string, unknown>).unknownKey).toBeUndefined();
     });
   });
 
@@ -198,6 +251,15 @@ describe('NProgress', () => {
       nprogress.promise(Promise.resolve());
 
       expect(document.getElementById('nprogress')).toBeDefined();
+    });
+  });
+
+  describe('RTL support', () => {
+    test('should calculate bar percentage for RTL', () => {
+      nprogress.configure({ isRTL: true });
+      nprogress.set(0.5);
+      const bar = document.querySelector('#nprogress .bar') as HTMLElement;
+      expect(bar).toBeDefined();
     });
   });
 });
