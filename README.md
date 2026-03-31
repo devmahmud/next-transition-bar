@@ -1,18 +1,16 @@
 # Next Transition Bar
 
-Elevate the user experience in your Next.js applications effortlessly with **next-transition-bar** – a versatile npm package designed to seamlessly enhance page transition progress. This lightweight and customizable solution adds a top loader and progress bar, delivering both visual appeal and a smooth transition experience.
+A lightweight, customizable progress bar for Next.js page transitions. Works with both **App Router** and **Pages Router**, and properly handles **middleware redirects**, **programmatic navigation**, and **browser back/forward**.
 
 [Live Demo](https://next-transition-bar.vercel.app)
 
 ## Installation
 
-You can install the package using npm:
-
 ```bash
 npm install next-transition-bar
 ```
 
-Or if you prefer using yarn:
+Or with yarn:
 
 ```bash
 yarn add next-transition-bar
@@ -20,20 +18,12 @@ yarn add next-transition-bar
 
 ## Usage
 
-Start by importing the package:
+### App Router (`app/layout.tsx`)
 
-```js
-import NextTransitionBar from 'next-transition-bar';
-```
-
-### Integration with `app/layout.js` (for `app` folder structure)
-
-Include `<NextTransitionBar />` within the `return()` statement inside the `<body></body>` of your `RootLayout()`:
-
-```js
+```tsx
 import NextTransitionBar from 'next-transition-bar';
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
@@ -45,76 +35,87 @@ export default function RootLayout({ children }) {
 }
 ```
 
-### Integration with `pages/_app.js` (for `pages` folder structure)
+### Pages Router (`pages/_app.tsx`)
 
-To render, add `<NextTransitionBar />` within the `return()` statement in `MyApp()`:
-
-```js
+```tsx
 import NextTransitionBar from 'next-transition-bar';
 
 export default function MyApp({ Component, pageProps }) {
   return (
     <>
       <NextTransitionBar />
-      <Component {...pageProps} />;
+      <Component {...pageProps} />
     </>
   );
 }
 ```
 
-### Importing nprogress instance
+### Importing the nprogress instance
 
-To import `nprogress` from 'next-transition-bar':
-
-```js
+```ts
 import { nprogress } from 'next-transition-bar';
+
+// Manually control the progress bar
+nprogress.start();
+nprogress.done();
+nprogress.set(0.5);
 ```
 
-or both
+## Props
 
-```js
-import NextTransitionBar, { nprogress } from 'next-transition-bar';
-```
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `color` | `string` | `"#29d"` | Color of the progress bar |
+| `height` | `number` | `3` | Height in pixels |
+| `initialPosition` | `number` | `0.08` | Initial position (0.08 = 8%) |
+| `trickleSpeed` | `number` | `200` | Increment delay in ms |
+| `speed` | `number` | `200` | Animation speed in ms |
+| `easing` | `string` | `"ease"` | CSS easing string |
+| `trickle` | `boolean` | `true` | Auto-increment behavior |
+| `showSpinner` | `boolean` | `true` | Show the spinner |
+| `shadow` | `string \| false` | `"0 0 10px ${color}, 0 0 5px ${color}"` | Shadow (set `false` to disable) |
+| `template` | `string` | _(default template)_ | Custom HTML template |
+| `zIndex` | `number` | `1600` | z-index of the progress bar |
+| `showAtBottom` | `boolean` | `false` | Show at bottom instead of top |
+| `isRTL` | `boolean` | `false` | Right-to-left direction |
+| `nonce` | `string` | `undefined` | Nonce for the style tag (CSP) |
+| `transformCSS` | `(css: string) => JSX.Element` | _(default)_ | Custom CSS rendering |
+| `startDelay` | `number` | `0` | Delay in ms before showing the bar (avoids flash on fast navigations) |
 
-### Default Configuration
+## Examples
 
-If no props are passed to `<NextTransitionBar />`, the package applies the following default configuration:
+### Custom styling
 
-```jsx
+```tsx
 <NextTransitionBar
-  color="#29d"
-  initialPosition={0.08}
-  trickleSpeed={200}
-  height={3}
-  trickle={true}
-  showSpinner={true}
-  easing="ease"
-  speed={200}
-  shadow="0 0 10px #29d, 0 0 5px #29d"
-  template='<div class="bar" role="bar"><div class="peg"></div></div>
-            <div class="spinner" role="spinner"><div class="spinner-icon"></div></div>'
-  zIndex={1600}
-  showAtBottom={false}
-  isRTL={false}
-  nonce={undefined}
-  transformCSS={(css) => <style nonce={undefined}>{css}</style>}
+  color="#ff5722"
+  height={4}
+  showSpinner={false}
+  shadow="0 0 10px #ff5722, 0 0 5px #ff5722"
 />
 ```
 
-- `color`: Change the default color of the top loader.
-- `initialPosition`: Adjust the initial position of the top loader (in percentage, e.g., `0.08 = 8%`).
-- `trickleSpeed`: Incremental delay speed in milliseconds.
-- `speed`: Animation speed for the top loader in milliseconds.
-- `easing`: Animation settings using easing (a CSS easing string).
-- `height`: Height of the top loader in pixels.
-- `trickle`: Auto-incrementing behavior for the top loader.
-- `showSpinner`: Toggle spinner visibility.
-- `shadow`: A smooth shadow for the top loader (set to `false` to disable it).
-- `template`: Include custom HTML attributes for the top loader.
-- `zIndex`: Define zIndex for the top loader.
-- `showAtBottom`: Display the top loader at the bottom (increase height to ensure visibility on mobile devices).
-- `isRTL`: Change the direction of the loader.
-- `nonce`: The nonce attribute to use for the `style` tag.
-- `transformCSS`: This is useful if you want to use a different style or minify the CSS.
+### Avoid flashing on fast navigations
 
-Experience a sleek and visually appealing progress bar with **next-transition-bar**. Customize it to suit your application's unique style and provide users with a delightful journey through your Next.js app.
+```tsx
+<NextTransitionBar startDelay={100} />
+```
+
+### Skip progress bar for specific links
+
+Add `data-nprogress="ignore"` to any anchor:
+
+```html
+<a href="/no-progress" data-nprogress="ignore">This link won't trigger the bar</a>
+```
+
+## How it works
+
+- Listens for anchor clicks via **event delegation** (single listener on `document`)
+- Intercepts `history.pushState` and `history.replaceState` to detect navigation completion
+- Handles `popstate` events for browser back/forward navigation
+- Properly completes the progress bar on **middleware redirects** (which use `replaceState`)
+
+## License
+
+MIT
