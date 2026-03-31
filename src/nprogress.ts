@@ -21,6 +21,7 @@ interface NProgressInstance {
   done(force?: boolean): NProgressInstance;
   inc(amount?: number): NProgressInstance;
   remove(): void;
+  isStarted(): boolean;
   promise($promise: Promise<unknown>): NProgressInstance;
   readonly status: number | null;
   readonly settings: NProgressSettings;
@@ -50,7 +51,8 @@ const DEFAULTS: NProgressSettings = {
 };
 
 const NProgress = (): NProgressInstance => {
-  const localSettings: NProgressSettings = DEFAULTS;
+  // Clone DEFAULTS so configure() doesn't mutate the shared object
+  const localSettings: NProgressSettings = { ...DEFAULTS };
   let localStatus: number | null = null;
   let initialPromises = 0;
   let currentPromises = 0;
@@ -249,11 +251,18 @@ const NProgress = (): NProgressInstance => {
 
     remove(): void {
       document.documentElement.classList.remove('nprogress-busy');
-      (document.querySelector(localSettings.parent) as HTMLElement).classList.remove('nprogress-custom-parent');
+      const parent = document.querySelector(localSettings.parent) as HTMLElement | null;
+      if (parent) {
+        parent.classList.remove('nprogress-custom-parent');
+      }
       const progress = document.getElementById('nprogress');
       if (progress) {
         removeElement(progress);
       }
+    },
+
+    isStarted(): boolean {
+      return isStarted();
     },
 
     promise($promise: Promise<unknown>): NProgressInstance {

@@ -60,19 +60,16 @@ export type NextTransitionBarProps = {
   /**
    * Defines zIndex for the progressbar.
    * @default 1600
-   *
    */
   zIndex?: number;
   /**
    * To show the TopLoader at bottom.
    * @default false
-   *
    */
   showAtBottom?: boolean;
   /**
-   * To change the direction of the progressbar
+   * To change the direction of the progressbar.
    * @default false
-   *
    */
   isRTL?: boolean;
   /**
@@ -80,16 +77,21 @@ export type NextTransitionBarProps = {
    * @default undefined
    */
   nonce?: string;
-
   /**
    * Use your custom CSS tag instead of the default one.
    * This is useful if you want to use a different style or minify the CSS.
    * @default (css) => <style nonce={nonce}>{css}</style>
    */
   transformCSS?: (css: string) => JSX.Element;
+  /**
+   * Delay in ms before the progress bar appears after a navigation starts.
+   * Useful to avoid flashing the bar on fast navigations.
+   * @default 0
+   */
+  startDelay?: number;
 };
 
-type PushStateInput = [data: unknown, unused: string, url?: string | URL | null | undefined];
+type HistoryMethod = typeof window.history.pushState;
 
 const NextTransitionBar = ({
   color: propColor,
@@ -111,6 +113,7 @@ const NextTransitionBar = ({
       {css}
     </style>
   ),
+  startDelay = 0,
 }: NextTransitionBarProps) => {
   const defaultColor = '#29d';
   const defaultHeight = 3;
@@ -126,7 +129,6 @@ const NextTransitionBar = ({
         ? `box-shadow:${shadow}`
         : `box-shadow:0 0 10px ${color},0 0 5px ${color}`;
 
-  // Check if to show at bottom
   const positionStyle = showAtBottom ? 'bottom: 0;' : 'top: 0;';
   const spinnerPositionStyle = showAtBottom ? 'bottom: 15px;' : 'top: 15px;';
   const spinnerRotationDirection = isRTL ? '-360deg' : '360deg';
@@ -144,63 +146,134 @@ const NextTransitionBar = ({
       template,
     });
 
-    const handleAnchorClick = (event: MouseEvent) => {
-      const targetElement = event.currentTarget as HTMLAnchorElement;
-      const targetUrl = targetElement.href;
-      const onlyHref = targetUrl.replace(location.origin, '');
+    let startTimer: ReturnType<typeof setTimeout> | null = null;
 
-      // Skip anchors with target="_blank"
-      if (targetElement.target === '_blank') return;
-
-      // Skip anchors with download attribute
-      if (targetElement.hasAttribute('download')) return;
-
-      // Skip external urls
-      if (targetUrl && targetUrl.indexOf(location.origin) !== 0) return;
-
-      // Skip anchors with rel="external"
-      if (targetElement.rel === 'external') return;
-
-      // Skip anchors with data-nprogress="ignore"
-      if (targetElement.getAttribute('data-nprogress') === 'ignore') return;
-
-      // Skip anchors with #, #! or javascript:void(0);
-      if (['/#', '#', '/#!', '#!', 'javascript:void(0)'].includes(onlyHref)) return;
-
-      // Skip empty anchor "href" or "href" attribute is not available
-      if (!targetUrl || targetUrl === undefined) return;
-
-      // Skip control/command+click
-      if (event.metaKey || event.ctrlKey) return;
-
-      const currentUrl = location.href;
-      if (targetUrl !== currentUrl) {
+    const startProgress = () => {
+      if (startDelay > 0) {
+        startTimer = setTimeout(() => {
+          nprogress.start();
+        }, startDelay);
+      } else {
         nprogress.start();
       }
     };
 
-    // MutationObserver to handle dynamic anchor elements
-    const handleMutation: MutationCallback = () => {
-      const anchorElements = document.querySelectorAll('a');
-
-      // Skip anchors with target="_blank" and anchors without href
-      const validAnchorELes = Array.from(anchorElements).filter((anchor) => anchor.href && anchor.target !== '_blank');
-      validAnchorELes.forEach((anchor) => anchor.addEventListener('click', handleAnchorClick));
+    const stopProgress = () => {
+      if (startTimer) {
+        clearTimeout(startTimer);
+        startTimer = null;
+      }
+      nprogress.done();
     };
 
-    const mutationObserver = new MutationObserver(handleMutation);
-    mutationObserver.observe(document, { childList: true, subtree: true });
+    /**
+     * Determines if an anchor click should trigger the progress bar.
+     */
+    const shouldTrackNavigation = (anchor: HTMLAnchorElement, event: MouseEvent): boolean => {
+      const targetUrl = anchor.href;
+      const onlyHref = targetUrl.replace(location.origin, '');
 
-    window.history.pushState = new Proxy(window.history.pushState, {
-      apply: (target, thisArg, argArray: PushStateInput) => {
-        nprogress.done();
-        return target.apply(thisArg, argArray);
-      },
-    });
+      // Skip if the default action was already prevented by another handler
+      if (event.defaultPrevented) return false;
+
+      // Skip anchors with target="_blank"
+      if (anchor.target === '_blank') return false;
+
+      // Skip anchors with download attribute
+      if (anchor.hasAttribute('download')) return false;
+
+      // Skip external urls
+      if (targetUrl && targetUrl.indexOf(location.origin) !== 0) return false;
+
+      // Skip anchors with rel="external"
+      if (anchor.rel === 'external') return false;
+
+      // Skip anchors with data-nprogress="ignore"
+      if (anchor.getAttribute('data-nprogress') === 'ignore') return false;
+
+      // Skip hash-only links that stay on the same page
+      if (
+        onlyHref.startsWith('#') ||
+        (onlyHref.startsWith('/#') && onlyHref.indexOf('/', 1) === -1)
+      ) {
+        return false;
+      }
+
+      // Skip javascript: protocol links
+      if (targetUrl.startsWith('javascript:')) return false;
+
+      // Skip empty anchor "href"
+      if (!targetUrl) return false;
+
+      // Skip control/command/shift/alt+click (opens in new tab or triggers other behavior)
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+
+      // Skip if the URL is the same as the current page (no navigation)
+      if (targetUrl === location.href) return false;
+
+      return true;
+    };
+
+    /**
+     * Event delegation: single click listener on document handles all anchor clicks.
+     * This replaces the old MutationObserver approach which caused memory leaks
+     * by attaching listeners to every anchor on every DOM mutation.
+     */
+    const handleClick = (event: MouseEvent) => {
+      const anchor = (event.target as HTMLElement).closest?.('a');
+      if (!anchor) return;
+      if (shouldTrackNavigation(anchor, event)) {
+        startProgress();
+      }
+    };
+
+    document.addEventListener('click', handleClick, { capture: true });
+
+    /**
+     * Proxy both pushState and replaceState to detect navigation completion.
+     *
+     * Next.js uses pushState for normal navigations and replaceState for
+     * middleware redirects, shallow routing, and URL rewrites. The old code
+     * only proxied pushState, which is why middleware redirects caused an
+     * infinite loading state.
+     */
+    const originalPushState: HistoryMethod = window.history.pushState;
+    const originalReplaceState: HistoryMethod = window.history.replaceState;
+
+    window.history.pushState = function patchedPushState(
+      ...args: Parameters<HistoryMethod>
+    ) {
+      stopProgress();
+      return originalPushState.apply(this, args);
+    };
+
+    window.history.replaceState = function patchedReplaceState(
+      ...args: Parameters<HistoryMethod>
+    ) {
+      stopProgress();
+      return originalReplaceState.apply(this, args);
+    };
+
+    /**
+     * Handle browser back/forward navigation via popstate event.
+     */
+    const handlePopState = () => {
+      stopProgress();
+    };
+
+    window.addEventListener('popstate', handlePopState);
 
     return () => {
-      // MutationObserver cleanup
-      mutationObserver.disconnect();
+      document.removeEventListener('click', handleClick, { capture: true });
+      window.removeEventListener('popstate', handlePopState);
+
+      // Restore original history methods to prevent proxy nesting on remount
+      window.history.pushState = originalPushState;
+      window.history.replaceState = originalReplaceState;
+
+      if (startTimer) {
+        clearTimeout(startTimer);
+      }
     };
   }, []);
 
